@@ -32,15 +32,19 @@ class RabbitMQ {
     return queue;
   }
 
-  async connectToQueue(queue_name, exchange_name, routing_key) {
-    await this.channel.bindQueue(queue_name, exchange_name, routing_key);
+  async connectToQueue(queue_name, exchange_name, routing_key, headers = {}) {
+    await this.channel.bindQueue(queue_name, exchange_name, routing_key, headers);
   }
 
-  async publishMessage(exchange_name, routing_key, message) {
+  async publishMessage(exchange_name, routing_key, message, headers = {}) {
     this.channel.publish(
       exchange_name,
       routing_key,
-      Buffer.from(JSON.stringify(message))
+      Buffer.from(JSON.stringify(message)),
+      {
+        persistent: true,
+        headers
+      }
     );
   }
 

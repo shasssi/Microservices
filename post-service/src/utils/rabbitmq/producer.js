@@ -1,5 +1,6 @@
 const RabbitMQ = require("./index");
 
+/** EXCHANGE: DIRECT */
 const directExchange = async () => {
   const rabbitmq = new RabbitMQ();
 
@@ -87,6 +88,7 @@ const directExchangeMultipleQueues = async () => {
   }, 500);
 };
 
+/** EXCHANGE: TOPIC */
 const topicExchange = async () => {
   const exchange_name = "post_notification";
 
@@ -108,6 +110,7 @@ const topicExchange = async () => {
   }, 500);
 };
 
+/** EXCHANGE: FANOUT */
 const fanoutExchange = async () => {
   const exchange_name = "new_product_launch";
 
@@ -131,3 +134,52 @@ const fanoutExchange = async () => {
 // directExchangeMultipleQueues();
 // topicExchange();
 // fanoutExchange();
+
+/** EXCHANGE: HEADERS */
+const headersExchange = async (headers, data) => {
+  const exchange_name = "header_exchange";
+
+  const rabbitmq = new RabbitMQ();
+  await rabbitmq.connect();
+
+  await rabbitmq.createExchange(exchange_name, "headers", { durable: true });
+
+  await rabbitmq.publishMessage(exchange_name, "", data, headers);
+
+  console.log("message published to queue");
+
+  setTimeout(() => {
+    rabbitmq.close();
+  }, 500);
+};
+
+headersExchange(
+  {
+    "x-match": "all",
+    "notification-type": "new-video",
+    "content-type": "video",
+  },
+  "video data"
+);
+headersExchange(
+  {
+    "x-match": "all",
+    "notification-type": "live-stream",
+    "content-type": "gaming",
+  },
+  "Live pubg game streaming online"
+);
+headersExchange(
+  {
+    "x-match": "any",
+    "notification-type-commnent": "new-comment",
+  },
+  "comment data"
+);
+headersExchange(
+  {
+    "x-match": "any",
+    "notification-type-like": "new-like",
+  },
+  "like data"
+);

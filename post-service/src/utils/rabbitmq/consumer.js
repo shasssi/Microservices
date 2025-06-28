@@ -54,3 +54,35 @@ const fanoutConsumer = async (exchange_name) => {
 };
 
 // fanoutConsumer("new_product_launch");
+
+const headersConsumer = async (exchange_name, headers) => {
+  const rabbitmq = new RabbitMQ();
+  const channel = await rabbitmq.connect();
+
+  const queue = await rabbitmq.createQueue("", { exclusive: true });
+  await rabbitmq.connectToQueue(queue.queue, exchange_name, "", headers);
+
+  await rabbitmq.consumeMessage(queue.queue, (msg) => {
+    console.log(queue.queue);
+    console.log(JSON.parse(msg.content));
+    channel.ack(msg);
+  });
+};
+
+headersConsumer("header_exchange", {
+  "x-match": "all",
+  "notification-type": "new-video",
+  "content-type": "video",
+});
+
+headersConsumer("header_exchange", {
+  "x-match": "all",
+  "notification-type": "live-stream",
+  "content-type": "gaming",
+});
+
+headersConsumer("header_exchange", {
+  "x-match": "any",
+  "notification-type-commnent": "new-comment",
+  "notification-type-like": "new-like",
+});
